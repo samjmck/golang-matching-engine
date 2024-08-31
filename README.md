@@ -7,7 +7,7 @@ I documented this process in 3 blog posts:
 2. [Setting up the Go project, Go modules, order matching logic](https://samjmck.com/en/blog/financial-exchange-go-part-2/)
 3. [Implementing a linked list instead of slices](https://samjmck.com/en/blog/financial-exchange-go-part-3/)
 
-See browser repository at
+See repository at
 - [Part 1](https://github.com/samjmck/golang-matching-engine/tree/f090b64d1606c25075f3d2b4e425eb850a27c86f)
 - [Part 2](https://github.com/samjmck/golang-matching-engine/tree/f090b64d1606c25075f3d2b4e425eb850a27c86f)
 - [Part 3](https://github.com/samjmck/golang-matching-engine/tree/c0ffcc6dca86dfb9a05e1f95b3b9399c7d70bbee)
