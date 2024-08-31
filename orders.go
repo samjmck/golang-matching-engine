@@ -1,6 +1,14 @@
 package main
 
-import "slices"
+type SortedOrderList interface {
+	Slice() []Order
+	Len() int
+	Get(index int) Order
+
+	RemoveFirst()
+	RemoveLast()
+	Insert(o Order)
+}
 
 type Order struct {
 	IsBuy	bool
@@ -8,42 +16,24 @@ type Order struct {
 	Price	int
 }
 
-type SortedOrderList []Order
-
-func (l SortedOrderList) RemoveFirst() SortedOrderList {
-	return l[1:]
-}
-
-func (l SortedOrderList) RemoveLast() SortedOrderList {
-	return l[:len(l) - 1]
-}
-
-func (l SortedOrderList) Insert(o Order) SortedOrderList {
-	i := 0
-	for i < len(l) && o.Price > l[i].Price {
-		i++
-	}
-	return slices.Insert(l, i, o)
-}
-
-// Returns the new asks and new bids
-func MatchOrInsert(asks SortedOrderList, bids SortedOrderList, order Order) (SortedOrderList, SortedOrderList) {
+func MatchOrInsert(asks SortedOrderList, bids SortedOrderList, order Order) {
 	n := 0
 	filledShares := 0
 	if order.IsBuy {
 		// While not all shares of the order have been filled and there
 		// there are still asks to match
-		for filledShares < order.Shares && len(asks) > 0 && asks[0].Price <= order.Price {
+		for filledShares < order.Shares && asks.Len() > 0 && asks.Get(0).Price <= order.Price {
 			n++
 			// If the remaining number of shares to fill is equal to or larger than
 			// the ask's shares, remove the order
 			// Else the remaining number of shares to fill is less than the ask's
 			// shares, subtract the remaining number of shares to fill from the ask's
-			if order.Shares - filledShares >= asks[0].Shares {
-				filledShares = filledShares + asks[0].Shares
-				asks = asks.RemoveFirst()
+			if order.Shares - filledShares >= asks.Get(0).Shares {
+				filledShares = filledShares + asks.Get(0).Shares
+				asks.RemoveFirst()
 			} else {
-				asks[0].Shares = asks[0].Shares - (order.Shares - filledShares)
+				firstOrder := asks.Get(0)
+				firstOrder.Shares = firstOrder.Shares - (order.Shares - filledShares)
 				filledShares = order.Shares
 			}
 		}
@@ -51,23 +41,23 @@ func MatchOrInsert(asks SortedOrderList, bids SortedOrderList, order Order) (Sor
 		// the bids
 		if filledShares < order.Shares {
 			order.Shares = order.Shares - filledShares
-			bids = bids.Insert(order)
+			bids.Insert(order)
 		}
 	} else {
-		for filledShares < order.Shares && len(bids) > 0 && bids[len(bids) - 1].Price >= order.Price {
+		for filledShares < order.Shares && bids.Len() > 0 && bids.Get(bids.Len() - 1).Price >= order.Price {
 			n++
-			if order.Shares - filledShares >= bids[len(bids) - 1].Shares {
-				filledShares = filledShares + bids[len(bids) - 1].Shares
-				bids = bids.RemoveLast()
+			if order.Shares - filledShares >= bids.Get(bids.Len() - 1).Shares {
+				filledShares = filledShares + bids.Get(bids.Len() - 1).Shares
+				bids.RemoveLast()
 			} else {
-				bids[len(bids) - 1].Shares = bids[len(bids) - 1].Shares - (order.Shares - filledShares)
+				lastOrder := bids.Get(bids.Len() - 1)
+				lastOrder.Shares = lastOrder.Shares - (order.Shares - filledShares)
 				filledShares = order.Shares
 			}
 		}
 		if filledShares < order.Shares {
 			order.Shares = order.Shares - filledShares
-			asks = asks.Insert(order)
+			asks.Insert(order)
 		}
 	}
-	return asks, bids
 }
